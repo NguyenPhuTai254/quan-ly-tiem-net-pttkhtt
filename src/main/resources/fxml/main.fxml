@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="gui.controller.MainController"
+            stylesheets="@../css/style.css"
+            prefWidth="1280" prefHeight="760"
+            styleClass="content-wrapper">
+
+    <!-- ===== SIDEBAR ===== -->
+    <left>
+        <VBox styleClass="sidebar" spacing="0" focusTraversable="false">
+
+            <!-- Logo -->
+            <VBox styleClass="sidebar-logo-area" spacing="4" focusTraversable="false">
+                <HBox spacing="10" alignment="CENTER_LEFT" focusTraversable="false">
+                    <Label text="&#xe30b;" focusTraversable="false"
+                           styleClass="sidebar-logo-icon-label, icon-lg"/>
+                    <VBox spacing="2" focusTraversable="false">
+                        <Label text="TIỆM NET" styleClass="sidebar-logo-text" focusTraversable="false"/>
+                        <Label text="Quản lý hệ thống" styleClass="sidebar-logo-sub" focusTraversable="false"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- User info strip -->
+            <HBox spacing="10" alignment="CENTER_LEFT" focusTraversable="false"
+                  styleClass="sidebar-user-strip">
+                <StackPane styleClass="header-avatar" focusTraversable="false">
+                    <Label fx:id="lblAvatarChar" text="A" focusTraversable="false"
+                           styleClass="sidebar-avatar-label"/>
+                </StackPane>
+                <VBox spacing="2" focusTraversable="false">
+                    <Label fx:id="lblUserName" text="Tên người dùng" focusTraversable="false"
+                           styleClass="sidebar-user-name"/>
+                    <Label fx:id="lblUserRole" text="Vai trò" focusTraversable="false"
+                           styleClass="sidebar-user-role"/>
+                </VBox>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        focusTraversable="false">
+                <VBox spacing="2" focusTraversable="false"
+                      styleClass="sidebar-scroll-content">
+
+                    <!-- ========== MENU NHÂN VIÊN / QUẢN LÝ ========== -->
+
+                    <!-- DASHBOARD -->
+                    <Label fx:id="lblSectionTongQuan" text="TỔNG QUAN" styleClass="sidebar-section-label" focusTraversable="false"/>
+                    <Button fx:id="btnSoDoMay" styleClass="menu-button" onAction="#loadSoDoMay">
+                        <graphic><Label text="&#xe9b0;" styleClass="icon-sm"/></graphic>
+                        <text>  Sơ đồ máy</text>
+                    </Button>
+
+                    <!-- VẬN HÀNH -->
+                    <Label fx:id="lblSectionVanHanh" text="VẬN HÀNH" styleClass="sidebar-section-label" focusTraversable="false"/>
+                    <Button fx:id="btnPhienSuDung" styleClass="menu-button" onAction="#loadPhienSuDung">
+                        <graphic><Label text="&#xe192;" styleClass="icon-sm"/></graphic>
+                        <text>  Phiên sử dụng</text>
+                    </Button>
+                    <Button fx:id="btnNapTien" styleClass="menu-button" onAction="#loadNapTien">
+                        <graphic><Label text="&#xe850;" styleClass="icon-sm"/></graphic>
+                        <text>  Nạp tiền</text>
+                    </Button>
+                    <Button fx:id="btnHoaDon" styleClass="menu-button" onAction="#loadHoaDon">
+                        <graphic><Label text="&#xe8b0;" styleClass="icon-sm"/></graphic>
+                        <text>  Hóa đơn</text>
+                    </Button>
+
+                    <!-- DỊCH VỤ (NhanVien) -->
+                    <Label fx:id="lblSectionDichVuNV" text="DỊCH VỤ" styleClass="sidebar-section-label" focusTraversable="false"/>
+                    <Button fx:id="btnDichVu" styleClass="menu-button" onAction="#loadDichVu">
+                        <graphic><Label text="&#xe63d;" styleClass="icon-sm"/></graphic>
+                        <text>  Dịch vụ</text>
+                    </Button>
+                    <Button fx:id="btnGoiDichVu" styleClass="menu-button" onAction="#loadGoiDichVu">
+                        <graphic><Label text="&#xe8f7;" styleClass="icon-sm"/></graphic>
+                        <text>  Gói dịch vụ</text>
+                    </Button>
+                    <Button fx:id="btnGoiDichVuKH" styleClass="menu-button" onAction="#loadGoiDichVuKH">
+                        <graphic><Label text="&#xe89a;" styleClass="icon-sm"/></graphic>
+                        <text>  Gói DV khách hàng</text>
+                    </Button>
+                    <Button fx:id="btnKhuyenMai" styleClass="menu-button" onAction="#loadKhuyenMai">
+                        <graphic><Label text="&#xe54e;" styleClass="icon-sm"/></graphic>
+                        <text>  Khuyến mãi</text>
+                    </Button>
+                    <Button fx:id="btnNhapHang" styleClass="menu-button" onAction="#loadNhapHang">
+                        <graphic><Label text="&#xe179;" styleClass="icon-sm"/></graphic>
+                        <text>  Nhập hàng</text>
+                    </Button>
+
+                    <!-- QUẢN LÝ -->
+                    <Label fx:id="lblSectionQuanLy" text="QUẢN LÝ" styleClass="sidebar-section-label" focusTraversable="false"/>
+                    <Button fx:id="btnKhachHang" styleClass="menu-button" onAction="#loadKhachHang">
+                        <graphic><Label text="&#xf233;" styleClass="icon-sm"/></graphic>
+                        <text>  Khách hàng</text>
+                    </Button>
+                    <Button fx:id="btnNhanVien" styleClass="menu-button" onAction="#loadNhanVien">
+                        <graphic><Label text="&#xf02e;" styleClass="icon-sm"/></graphic>
+                        <text>  Nhân viên</text>
+                    </Button>
+                    <Button fx:id="btnMayTinh" styleClass="menu-button" onAction="#loadMayTinh">
+                        <graphic><Label text="&#xe30b;" styleClass="icon-sm"/></graphic>
+                        <text>  Máy tính</text>
+                    </Button>
+                    <Button fx:id="btnKhuMay" styleClass="menu-button" onAction="#loadKhuMay">
+                        <graphic><Label text="&#xe5c3;" styleClass="icon-sm"/></graphic>
+                        <text>  Khu máy</text>
+                    </Button>
+
+                    <!-- BÁO CÁO -->
+                    <Label fx:id="lblSectionBaoCao" text="BÁO CÁO" styleClass="sidebar-section-label" focusTraversable="false"/>
+                    <Button fx:id="btnThongKe" styleClass="menu-button" onAction="#loadThongKe">
+                        <graphic><Label text="&#xe26b;" styleClass="icon-sm"/></graphic>
+                        <text>  Thống kê</text>
+                    </Button>
+
+                    <!-- ========== MENU KHÁCH HÀNG (ẩn mặc định) ========== -->
+
+                    <!-- TÀI KHOẢN -->
+                    <Label fx:id="lblSectionTaiKhoan" text="TÀI KHOẢN CỦA TÔI"
+                           styleClass="sidebar-section-label" focusTraversable="false"
+                           visible="false" managed="false"/>
+                    <Button fx:id="btnThongTinKH" styleClass="menu-button" onAction="#loadThongTinKhachHang"
+                            visible="false" managed="false">
+                        <graphic><Label text="&#xe7fd;" styleClass="icon-sm"/></graphic>
+                        <text>  Thông tin &amp; Số dư</text>
+                    </Button>
+
+                    <!-- SỬ DỤNG -->
+                    <Label fx:id="lblSectionSuDung" text="SỬ DỤNG"
+                           styleClass="sidebar-section-label" focusTraversable="false"
+                           visible="false" managed="false"/>
+                    <Button fx:id="btnPhienCuaToi" styleClass="menu-button" onAction="#loadPhienCuaToi"
+                            visible="false" managed="false">
+                        <graphic><Label text="&#xe192;" styleClass="icon-sm"/></graphic>
+                        <text>  Phiên của tôi</text>
+                    </Button>
+                    <Button fx:id="btnGoiCuaToi" styleClass="menu-button" onAction="#loadGoiCuaToi"
+                            visible="false" managed="false">
+                        <graphic><Label text="&#xe8f7;" styleClass="icon-sm"/></graphic>
+                        <text>  Gói dịch vụ của tôi</text>
+                    </Button>
+
+                    <!-- ĐẶT DỊCH VỤ -->
+                    <Label fx:id="lblSectionOrderKH" text="DỊCH VỤ"
+                           styleClass="sidebar-section-label" focusTraversable="false"
+                           visible="false" managed="false"/>
+                    <Button fx:id="btnDatDichVu" styleClass="menu-button" onAction="#loadDatDichVu"
+                            visible="false" managed="false">
+                        <graphic><Label text="&#xe63d;" styleClass="icon-sm"/></graphic>
+                        <text>  Đặt dịch vụ</text>
+                    </Button>
+
+                </VBox>
+            </ScrollPane>
+
+            <!-- Logout button -->
+            <VBox focusTraversable="false"
+                  styleClass="sidebar-logout-area">
+                <Separator focusTraversable="false"
+                           styleClass="sidebar-logout-separator"/>
+                <Button styleClass="menu-button, logout-button"
+                        onAction="#handleLogout">
+                    <graphic><Label text="&#xe9ba;" styleClass="icon-sm"/></graphic>
+                    <text>  Đăng xuất</text>
+                </Button>
+            </VBox>
+
+        </VBox>
+    </left>
+
+    <!-- ===== CONTENT AREA ===== -->
+    <center>
+        <VBox spacing="0" styleClass="content-wrapper">
+            <!-- Header bar -->
+            <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="14">
+                <Label fx:id="lblPageTitle" text="Sơ đồ máy" styleClass="header-title"
+                       HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblCurrentTime" text="00:00:00"
+                       styleClass="header-time"/>
+            </HBox>
+
+            <!-- Dynamic content -->
+            <StackPane fx:id="contentPane" VBox.vgrow="ALWAYS"
+                       styleClass="content-area"/>
+        </VBox>
+    </center>
+
+</BorderPane>

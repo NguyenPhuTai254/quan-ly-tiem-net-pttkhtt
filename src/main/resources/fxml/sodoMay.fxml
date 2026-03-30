@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gui.controller.SoDoMayController"
+      stylesheets="@../css/style.css"
+      spacing="16" styleClass="no-padding">
+
+    <!-- Page Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="&#xe55b;" styleClass="page-icon, icon-lg"/>
+        <VBox spacing="2">
+            <Label text="Sơ Đồ Máy" styleClass="page-title"/>
+            <Label text="Trạng thái thời gian thực" styleClass="page-subtitle"/>
+        </VBox>
+        <Pane HBox.hgrow="ALWAYS"/>
+
+        <!-- Legend -->
+        <HBox spacing="16" alignment="CENTER" styleClass="legend-box">
+            <HBox spacing="6" alignment="CENTER">
+                <Pane styleClass="legend-dot, legend-dot-green"/>
+                <Label text="Trống" styleClass="legend-text"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER">
+                <Pane styleClass="legend-dot, legend-dot-blue"/>
+                <Label text="Đang dùng" styleClass="legend-text"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER">
+                <Pane styleClass="legend-dot, legend-dot-orange"/>
+                <Label text="Bảo trì" styleClass="legend-text"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER">
+                <Pane styleClass="legend-dot, legend-dot-gray"/>
+                <Label text="Tắt máy" styleClass="legend-text"/>
+            </HBox>
+        </HBox>
+    </HBox>
+
+    <!-- Stats strip -->
+    <HBox spacing="12">
+        <VBox styleClass="stat-card stat-card-green" spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblMayTrong" text="0" styleClass="stat-number, stat-number-green"/>
+            <Label text="Máy trống" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card stat-card-blue" spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblMayDangDung" text="0" styleClass="stat-number, stat-number-blue"/>
+            <Label text="Đang dùng" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card stat-card-orange" spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblMayBaoTri" text="0" styleClass="stat-number, stat-number-orange"/>
+            <Label text="Bảo trì" styleClass="stat-label"/>
+        </VBox>
+        <VBox styleClass="stat-card stat-card-red" spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTongMay" text="0" styleClass="stat-number"/>
+            <Label text="Tổng máy" styleClass="stat-label"/>
+        </VBox>
+    </HBox>
+
+    <!-- Filter bar -->
+    <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+        <Label text="Lọc theo khu:" styleClass="filter-label"/>
+        <ComboBox fx:id="cboKhu" promptText="Tất cả khu" styleClass="combo-box" prefWidth="160"
+                  onAction="#handleFilterKhu"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button styleClass="btn btn-secondary" onAction="#handleRefresh">
+            <graphic><Label text="&#xe5d5;" styleClass="icon-sm"/></graphic>
+            <text>  Làm mới</text>
+        </Button>
+        <Button fx:id="btnMoPhien" styleClass="btn btn-success"
+                onAction="#handleMoPhien" disable="true">
+            <graphic><Label text="&#xe037;" styleClass="icon-sm"/></graphic>
+            <text>  Mở phiên</text>
+        </Button>
+        <Button fx:id="btnKetThuc" styleClass="btn btn-danger"
+                onAction="#handleKetThucPhien" disable="true">
+            <graphic><Label text="&#xe047;" styleClass="icon-sm"/></graphic>
+            <text>  Kết thúc phiên</text>
+        </Button>
+    </HBox>
+
+    <!-- Machine grid -->
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true">
+        <VBox fx:id="vboxKhuMay" spacing="16" styleClass="no-padding"/>
+    </ScrollPane>
+
+    <!-- Status bar -->
+    <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="16">
+        <Label fx:id="lblSelectedMay" text="Chưa chọn máy"
+               styleClass="status-selected"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblAutoRefresh" text="Tự động cập nhật: 30s"
+               styleClass="status-auto-refresh"/>
+    </HBox>
+
+</VBox>

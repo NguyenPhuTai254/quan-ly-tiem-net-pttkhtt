@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.collections.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gui.controller.MayTinhController"
+      stylesheets="@../css/style.css"
+      spacing="16" styleClass="no-padding">
+
+    <!-- Page Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          styleClass="page-header-padding">
+        <Label text="&#xe30b;" styleClass="page-icon, icon-lg"/>
+        <VBox spacing="2">
+            <Label text="Quản Lý Máy Tính" styleClass="page-title"/>
+            <Label fx:id="lblSubtitle" text="Đang tải..." styleClass="page-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <!-- Toolbar -->
+    <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="  Tìm kiếm..." styleClass="search-bar"
+                   prefWidth="260" onKeyReleased="#handleSearch"/>
+        <ComboBox fx:id="cboKhu" promptText="Khu máy" styleClass="combo-box" prefWidth="140"/>
+        <ComboBox fx:id="cboTrangThai" promptText="Trạng thái" styleClass="combo-box" prefWidth="140"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnThem" styleClass="btn btn-primary" onAction="#handleThem">
+            <graphic><Label text="&#xe145;" styleClass="icon-sm"/></graphic>
+            <text>  Thêm</text>
+        </Button>
+        <Button fx:id="btnSua" styleClass="btn btn-warning" onAction="#handleSua" disable="true">
+            <graphic><Label text="&#xe3c9;" styleClass="icon-sm"/></graphic>
+            <text>  Sửa</text>
+        </Button>
+        <Button fx:id="btnBaoTri" styleClass="btn btn-warning" onAction="#handleBaoTri" disable="true">
+            <graphic><Label text="&#xe869;" styleClass="icon-sm"/></graphic>
+            <text>  Bảo trì</text>
+        </Button>
+        <Button fx:id="btnKhoiPhuc" styleClass="btn btn-primary" onAction="#handleKhoiPhuc" disable="true">
+            <graphic><Label text="&#xe8b3;" styleClass="icon-sm"/></graphic>
+            <text>  Khôi phục</text>
+        </Button>
+        <Button fx:id="btnXoa" styleClass="btn btn-danger" onAction="#handleXoa" disable="true">
+            <graphic><Label text="&#xe872;" styleClass="icon-sm"/></graphic>
+            <text>  Xóa</text>
+        </Button>
+        <Button fx:id="btnLamMoi" styleClass="btn btn-secondary" onAction="#handleLamMoi">
+            <graphic><Label text="&#xe5d5;" styleClass="icon-sm"/></graphic>
+            <text>  Làm mới</text>
+        </Button>
+    </HBox>
+
+    <!-- Table -->
+    <VBox VBox.vgrow="ALWAYS" styleClass="page-card, no-padding" spacing="0">
+        <TableView fx:id="tableView" VBox.vgrow="ALWAYS"
+                   styleClass="table-rounded">
+            <columns>
+                <TableColumn fx:id="colMaMay" text="Mã máy" prefWidth="80"/>
+                <TableColumn fx:id="colTenMay" text="Tên máy" prefWidth="150"/>
+                <TableColumn fx:id="colCauHinh" text="Cấu hình" prefWidth="200"/>
+                <TableColumn fx:id="colKhu" text="Khu" prefWidth="100"/>
+                <TableColumn fx:id="colGia" text="Giá/giờ" prefWidth="100"/>
+                <TableColumn fx:id="colTrangThai" text="Trạng thái" prefWidth="120"/>
+            </columns>
+        </TableView>
+
+        <!-- Footer -->
+        <HBox alignment="CENTER_RIGHT" spacing="12" styleClass="table-footer">
+            <Label fx:id="lblTotal" text="Tổng: 0 bản ghi" styleClass="page-subtitle"/>
+        </HBox>
+    </VBox>
+
+</VBox>

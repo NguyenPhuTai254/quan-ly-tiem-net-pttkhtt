@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.collections.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="gui.controller.KhuMayController"
+      stylesheets="@../css/style.css"
+      spacing="16" styleClass="no-padding">
+
+    <!-- Page Header -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          styleClass="page-header-padding">
+        <Label text="&#xe5c3;" styleClass="page-icon, icon-lg"/>
+        <VBox spacing="2">
+            <Label text="Quản Lý Khu Máy" styleClass="page-title"/>
+            <Label fx:id="lblSubtitle" text="Đang tải..." styleClass="page-subtitle"/>
+        </VBox>
+    </HBox>
+
+    <!-- Toolbar -->
+    <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
+        <TextField fx:id="txtSearch" promptText="  Tìm kiếm..." styleClass="search-bar"
+                   prefWidth="260" onKeyReleased="#handleSearch"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnThem" styleClass="btn btn-primary" onAction="#handleThem">
+            <graphic><Label text="&#xe145;" styleClass="icon-sm"/></graphic>
+            <text>  Thêm</text>
+        </Button>
+        <Button fx:id="btnSua" styleClass="btn btn-warning" onAction="#handleSua" disable="true">
+            <graphic><Label text="&#xe3c9;" styleClass="icon-sm"/></graphic>
+            <text>  Sửa</text>
+        </Button>
+        <Button fx:id="btnXoa" styleClass="btn btn-danger" onAction="#handleXoa" disable="true">
+            <graphic><Label text="&#xe872;" styleClass="icon-sm"/></graphic>
+            <text>  Xóa</text>
+        </Button>
+        <Button fx:id="btnLamMoi" styleClass="btn btn-secondary" onAction="#handleLamMoi">
+            <graphic><Label text="&#xe5d5;" styleClass="icon-sm"/></graphic>
+            <text>  Làm mới</text>
+        </Button>
+    </HBox>
+
+    <!-- Table -->
+    <VBox VBox.vgrow="ALWAYS" styleClass="page-card, no-padding" spacing="0">
+        <TableView fx:id="tableView" VBox.vgrow="ALWAYS"
+                   styleClass="table-rounded">
+            <columns>
+                <TableColumn fx:id="colMaKhu" text="Mã khu" prefWidth="80"/>
+                <TableColumn fx:id="colTenKhu" text="Tên khu" prefWidth="200"/>
+                <TableColumn fx:id="colSoMay" text="Số máy" prefWidth="100"/>
+                <TableColumn fx:id="colMoTa" text="Mô tả" prefWidth="260"/>
+                <TableColumn fx:id="colTrangThai" text="Trạng thái" prefWidth="120"/>
+            </columns>
+        </TableView>
+
+        <!-- Footer -->
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="table-footer">
+            <Label fx:id="lblSoMay" text="" styleClass="page-subtitle"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblTotal" text="Tổng: 0 bản ghi" styleClass="page-subtitle"/>
+        </HBox>
+    </VBox>
+
+</VBox>

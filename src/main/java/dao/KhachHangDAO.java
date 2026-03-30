@@ -131,38 +131,41 @@ public class KhachHangDAO {
 
         }
     }
-    //cập nhật dữ liệu cho khách hàng
+    // cập nhật dữ liệu cho khách hàng
+    // cập nhật dữ liệu cho khách hàng
     public boolean update (KhachHang kh){
 
         KhachHang existing = getById(kh.getMakh());
 
-        //kiểm tra khách hàng tồn tại
+        // kiểm tra khách hàng tồn tại
         if(existing == null){
             throw new RuntimeException("Lỗi khách hàng không tồn tại !");
         }
 
-        //khách hàng đã bị xóa trước đó
-        if(existing.isNgung()){
-            throw new RuntimeException("Khách hàng đã bị xóa !");
+        // ĐÃ XÓA CHẶN: Cho phép cập nhật và khôi phục khách hàng từ NGUNG sang HOATDONG
+
+        // BẢO MẬT: Nếu người dùng cố tình chuyển sang NGUNG trong form sửa,
+        // phải kiểm tra xem khách đó có đang chơi net không
+        if ("NGUNG".equals(kh.getTrangthai()) && hasActiveSession(kh.getMakh())) {
+            throw new RuntimeException("Không thể khóa khách hàng đang có phiên chơi !");
         }
 
-        //kiểm tra Valid
+        // kiểm tra Valid
         validateKhachHang(kh,false);
 
-
-        String sql = "UPDATE khachhang SET Ho = ? , Ten = ? , SoDienThoai = ? , MatKhau = ? WHERE MaKH = ? AND TrangThai = ?";
+        // ĐÃ SỬA LỖI: Thêm TrangThai = ? vào danh sách SET để MySQL cập nhật
+        String sql = "UPDATE khachhang SET Ho = ? , Ten = ? , SoDienThoai = ? , MatKhau = ?, TrangThai = ? WHERE MaKH = ?";
 
         try{
-
             Connection conn = DBConnection.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
-            pstmt.setString(1,kh.getHo());
-            pstmt.setString(2,kh.getTen());
-            pstmt.setString(3,kh.getSodienthoai());
-            pstmt.setString(4,kh.getMatkhau());
-            pstmt.setString(5,kh.getMakh());
-            pstmt.setString(6,"HOATDONG");
+            pstmt.setString(1, kh.getHo());
+            pstmt.setString(2, kh.getTen());
+            pstmt.setString(3, kh.getSodienthoai());
+            pstmt.setString(4, kh.getMatkhau());
+            pstmt.setString(5, kh.getTrangthai()); // Lưu Trạng thái mới xuống DB
+            pstmt.setString(6, kh.getMakh());      // Khớp với WHERE MaKH = ?
 
             pstmt.executeUpdate();
             pstmt.close();
@@ -422,7 +425,7 @@ public class KhachHangDAO {
         return hasSession;
     }
     //Tìm khách hàng theo Id
-    private KhachHang getById(String MaKH){
+    public KhachHang getById(String MaKH){
         KhachHang kh = null;
         String sql = "SELECT * FROM khachhang WHERE MaKH = ?";
 
@@ -447,6 +450,48 @@ public class KhachHangDAO {
 
         }
         return kh;
+    }
+
+
+
+    //update số dư sử dụng cho đăng nhập
+
+    public boolean updateSoDu (String makh ,double sodu){
+
+        KhachHang existing = getById(makh);
+
+        //kiểm tra khách hàng tồn tại
+        if(existing == null){
+            throw new RuntimeException("Lỗi khách hàng không tồn tại !");
+        }
+
+        //khách hàng đã bị xóa trước đó
+        if(existing.isNgung()){
+            throw new RuntimeException("Khách hàng đã bị xóa !");
+        }
+
+        //kiểm tra Valid
+        validateKhachHang(existing,false);
+
+
+        String sql = "UPDATE khachhang SET SoDu = ? WHERE MaKH = ?";
+
+        try{
+
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+
+            pstmt.setDouble(1,sodu);
+            pstmt.setString(2,makh);
+
+            pstmt.executeUpdate();
+            pstmt.close();
+
+        }catch (SQLException e){
+            throw new RuntimeException("Lỗi update KhachHang : " + e.getMessage());
+        }
+
+        return true;
     }
 
     //Chuyển từ ResultSet -> KhachHang
@@ -489,5 +534,19 @@ public class KhachHangDAO {
         }
 
         return false;
+    }
+
+    // update lại số dư của khách hàng (dùng trong hàm insert của GoiDichVuKhachHangBUS)
+    public boolean updateSoDuKhiMuaGoi(KhachHang kh){
+        Connection conn1 = DBConnection.getConnection();
+        String sql = "UPDATE khachhang SET SoDu = ? WHERE MaKH = ?";
+        try (PreparedStatement ps = conn1.prepareStatement(sql)) {
+            ps.setDouble(1, kh.getSodu());
+            ps.setString(2, kh.getMakh());
+            return ps.executeUpdate() > 0;
+        }catch(Exception e){
+            System.err.println("Lỗi updateSoDuKhiMuaGoi - KhachHangDAO: " + e.getMessage());
+            return false;
+        }
     }
 }

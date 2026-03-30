@@ -6,21 +6,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 
+/* CÁC METHOD.
+   1. List<SuDungDichVu> getByPhien(String maPhien): lấy sử dụng dịch vụ bằng mã phiên.
+   2. boolean insert(SuDungDichVu sddv): thêm một dòng sử dụng dịch vụ.
+   2.1 sinh mã tự động.
+   3. boolean delete(String maSD): xóa dịch vụ sử dụng.
+   4. List<SuDungDichVu> getALl(): lất tất cả các dòng dữ liệu.
+   5. SuDungDichVu getByID(String maSDDV): lấy dữ liệu bằng mã sử dụng dịch vụ.
+   6. vodi Print(SuDungDichVu sddv): in ra thông tin.
+*/
 public class SuDungDichVuDAO{
     // Connect với database
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
-    /*
-    Phương thức getByPhien, có chức năng lấy các thông tin của các ghi có mã phiên giống với mã phiên được truyền vô.
-    parameter: mã phiên.
-    return: List<SuDungDichVu> (dù ko có ghi nào thì nó vẫn trả về list) , lỗi trả về null;
-    */
-    public List<SuDungDichVu> geyByPhien (String maPhien){
+
+    // LẤY SỬ DỤNG DỊCH VỤ BẰNG MÃ PHIÊN
+    public List<SuDungDichVu> geyByPhien (String maPhien) throws Exception{
+        conn = DBConnection.getConnection();
         String sql = "SELECT * FROM sudungdichvu WHERE MaPhien = ?";
         List<SuDungDichVu> listResult = new ArrayList<>();
         try{
-            conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, maPhien);
             rs = ps.executeQuery();
@@ -29,55 +35,41 @@ public class SuDungDichVuDAO{
                         , rs.getString("MaDV"), rs.getInt("SoLuong"), rs.getDouble("DonGia")
                         , rs.getDouble("ThanhTien"), rs.getTimestamp("ThoiGian").toLocalDateTime()));
             }
-        }catch(Exception e){
-            System.err.println("[Lỗi getByPhien - SuDungDichVuDAO]: " + e.getMessage());
-            return null;
-        }finally{
-            DBConnection.closeConnection();
+            return listResult;
+        }catch(Exception e) {
+            throw new Exception("[Lỗi getByPhien - SuDungDichVuDAO]: " + e.getMessage());
         }
-        return listResult;
     }
 
-    /*
-    Phương thức insert có chức năng tạo thêm một ghi.
-    parameter: SuDungDichVu sddv. (chỉ cần có: mã phiên, mã dịch vụ, số lượng, đơn giá, thành tiền)
-    return: true/fasle.
-    */
-    public boolean insert(SuDungDichVu sddv){
+    // THÊM MỘT DỊCH VỤ
+    public boolean insert(SuDungDichVu sddv) throws Exception{
+        conn = DBConnection.getConnection();
         String sql = "Insert sudungdichvu (MaSD, MaPhien, MaDV, SoLuong, DonGia, ThanhTien, ThoiGian)"
                 + "VALUES( ?, ?, ?, ?, ?, ?, ?)";
         try{
-            conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sql);
-            ps.setString(1, this.generateNextSuDungDichVu());
+            ps.setString(1, this.generateNextSuDungDichVu(conn));
             ps.setString(2, sddv.getMaphien());
             ps.setString(3, sddv.getMadv());
             ps.setInt(4, sddv.getSoluong());
             ps.setDouble(5, sddv.getDongia());
             ps.setDouble(6, sddv.getThanhtien());
-            ps.setObject(7, LocalDateTime.now() );
+            ps.setObject(7, sddv.getThoigian() );
 
             int rowAffected = ps.executeUpdate();
 
             return rowAffected > 0; // Trả về true nếu chèn thành công ít nhất 1 dòng
-        }catch(Exception e){
-            System.err.println("[ LỖI insert - SuDungDichVuDAO: " + e.getMessage());
-            return false;
-        }finally{
-            DBConnection.closeConnection();
+        }catch(Exception e) {
+            throw new Exception("[ LỖI insert - SuDungDichVuDAO: " + e.getMessage());
         }
     }
 
-    /*
-      Phương thức nội bộ dùng để tạo mã sử dụng dịch vụ mới tự động tăng (bổ trợ cho phương thức insert).
-      Định dạng: SD + 3 chữ số (SD001, SD002,...)
-      @return String mã mới đã được tăng lên 1
-    */
-    private String generateNextSuDungDichVu() {
+    // SINH MÃ TỰ ĐỘNG
+    private String generateNextSuDungDichVu(Connection conn1) throws Exception{
         String sql = "SELECT MaSD FROM sudungdichvu ORDER BY MaSD DESC LIMIT 1";
         String nextID = "SD001"; // Mặc định nếu bảng trống
 
-        try (PreparedStatement ps = conn.prepareStatement(sql);
+        try (PreparedStatement ps = conn1.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 String lastID = rs.getString("MaSD"); // Ví dụ: "SD005"
@@ -85,39 +77,28 @@ public class SuDungDichVuDAO{
                 number++;
                 nextID = String.format("SD%03d", number);
             }
+            return nextID;
         } catch (Exception e) {
-            System.err.println("[LỖI TỰ TĂNG MÃ - SuDungDichVuDAO]: " + e.getMessage());
+            throw new Exception("[LỖI TỰ TĂNG MÃ - SuDungDichVuDAO]: " + e.getMessage());
         }
-        return nextID;
     }
 
-    /*
-       Phương thức delete dùng để hủy dịch vụ (yêu cầu kiểm tra khách còn đang chơi không trước khi sử dụng)
-       parameter: MaSD
-       return: true, false
-    */
-    public boolean delete(String maSD) {
+    // XÓA DÒNG SỬ DỤNG DỊCH VỤ ĐÓ.
+    public boolean delete(String maSD) throws Exception{
+        conn = DBConnection.getConnection();
         String sql = "DELETE FROM sudungdichvu WHERE MaSD = ?";
         try {
-            conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, maSD);
 
             int rowAffected = ps.executeUpdate();
             return rowAffected > 0; // Trả về true nếu xóa thành công
         } catch (Exception e) {
-            System.err.println("[ LỖI delete - SuDungDichVuDAO ]: " + e.getMessage());
-            return false;
-        } finally {
-            DBConnection.closeConnection();
+            throw new Exception("[ LỖI delete - SuDungDichVuDAO ]: " + e.getMessage());
         }
     }
 
-    /*
-    Phương thức getALl dùng để lấy tất cả các ghi sử dụng dịch vụ
-    parameter: không có.
-    return: List<SuDungDichVu>
-    */
+    // LẤY TẤT CẢ CÁC DÒNG SỬ DỤNG DỊCH VỤ
     public List<SuDungDichVu> getALl(){
         String sql = "SELECT * FROM sudungdichvu";
         List<SuDungDichVu> resultList = new ArrayList<>();
@@ -143,10 +124,61 @@ public class SuDungDichVuDAO{
         return resultList;
     }
 
-    // Phương thức in ra dịch vụ
+    // LẤY BẰNG MÃ
+    public SuDungDichVu getByID(String maSDDV){
+        String sql = "SELECT * FROM sudungdichvu WHERE MaSD = ?";
+        SuDungDichVu result = new SuDungDichVu();
+        try{
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, maSDDV);
+            rs = ps.executeQuery();
+            if( rs.next() ){
+                result.setMasd(rs.getString("MaSD"));
+                result.setMaphien(rs.getString("MaPhien"));
+                result.setMadv(rs.getString("MaDV"));
+                result.setSoluong(rs.getInt("SoLuong"));
+                result.setDongia(rs.getDouble("DonGia"));
+                result.setThanhtien(rs.getDouble("ThanhTien"));
+                result.setThoigian(rs.getTimestamp("ThoiGian").toLocalDateTime());
+            }else{
+                result = null;
+            }
+        }catch(Exception e){
+            System.err.println("Lỗi getByID - SuDungDichVuDAO: " + e.getMessage());
+        }finally{
+            DBConnection.closeConnection();
+        }
+        return result;
+    }
+
+    // IN THÔNG TIN CỦA DÒNG DỮ LIỆU ĐÓ.
     public void Print(SuDungDichVu sddv){
         System.out.println("Mã sử dụng: " + sddv.getMadv() + " Mã phiên: " + sddv.getMaphien() + " Mã dịch vụ: "
                 + sddv.getMadv( ) + " Số lượng: " +sddv.getSoluong() + " Đơn giá: " + sddv.getDongia() + " Thành tiền: "
                 + sddv.getThanhtien() + " Thời gian: " + sddv.getThoigian());
+    }
+
+
+
+    public  double tinhTongTienPhien(String maPhien ) throws Exception {
+        String sql = "SELECT SUM(DonGia) FROM sudungdichvu " +
+                " WHERE MaPhien = ?";
+
+        try(Connection conn = DBConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+        ){
+            pstmt.setString(1,maPhien);
+
+            try (ResultSet rs = pstmt.executeQuery()){
+                if(rs.next()){
+                    return  rs.getDouble(1);
+                }
+            }
+        }
+        catch (SQLException e ){
+            throw  new Exception("Lỗi tính tổng tiền khách hàng " + e.getMessage());
+        }
+        return  0.0;
     }
 }

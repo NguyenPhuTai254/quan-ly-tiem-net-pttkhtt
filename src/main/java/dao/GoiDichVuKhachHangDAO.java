@@ -7,21 +7,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 
+/* CÁC METHOD.
+    1. List<GoiDichVuKhachHang> getByKhachHang(String maKH): lấy tất cả các dịch vụ bằng mã khách hàng.
+    2. boolean insert(GoiDichVuKhachHang newGDVKH): thêm một gói dịch vụ khách hàng.
+    2.1 String generateNextMaGoiKH(): tăng mã tự động.
+    3. boolean update(GoiDichVuKhachHang updateGDVKH): chỉnh sửa thông tin gói dịch vụ khách hàng.
+    4. boolean getConHieuLuc(String maGoiKH): kiểm tra gói còn hiệu lực không.
+    5. GoiDichVuKhachHang getByID(String maGKH): lấy gói dịch vụ bằng mã.
+    6. void print(GoiDichVuKhachHang gdv)
+*/
+
 public class GoiDichVuKhachHangDAO{
     // Connect với database
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
 
-    /*
-    Phương thức getByKhachHang: lấy tất cả các ghi có mã khách hàng đó.
-    paramter: MaKH.
-    return: List<GoiDichVuKhachHang>/ null(nếu không có).
-    */
+    // LẤY CÁC GOI DỊCH VỤ KHÁCH BẰNG MÃ KHÁCH HÀNG
     public List<GoiDichVuKhachHang> getByKhachHang(String maKH) {
         List<GoiDichVuKhachHang> danhSach = new ArrayList<>();
-        String sql = "SELECT MaGoiKH, MaKH, MaGoi, MaNV, SoGioBanDau, SoGioConLai, NgayMua, " +
-                "NgayHetHan, GiaMua, TrangThai " + "FROM goidichvu_khachhang WHERE MaKH = ?";
+        String sql = "SELECT * FROM goidichvu_khachhang WHERE MaKH = ?";
 
         try {
             conn = DBConnection.getConnection();
@@ -60,19 +65,53 @@ public class GoiDichVuKhachHangDAO{
         return danhSach;
     }
 
-    /*
-    Phương thức insert: tạo thêm một ghi.
-    paramter: GoiDichVuKhachHang newGDVKH.
-    return: true/false
-    */
-    public boolean insert(GoiDichVuKhachHang newGDVKH) {
-        String sql = "INSERT INTO goidichvu_khachhang (MaGoiKH, MaKH, MaGoi, MaNV, SoGioBanDau, SoGioConLai" +
-                ", NgayMua, NgayHetHan, GiaMua, TrangThai) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // PHƯƠNG THỨC SINH MÃ TỰ ĐỘNG
+    public GoiDichVuKhachHang getByMaGoiKhachHang(String maGoiKH) {
+        GoiDichVuKhachHang goiKH = new GoiDichVuKhachHang();
+        String sql = "SELECT MaGoiKH, MaKH, MaGoi, MaNV, SoGioBanDau, SoGioConLai, NgayMua, " +
+                "NgayHetHan, GiaMua, TrangThai " + "FROM goidichvu_khachhang WHERE MaGoiKH = ?";
+
         try {
             conn = DBConnection.getConnection();
             ps = conn.prepareStatement(sql);
+            ps.setString(1, maGoiKH);
+            rs = ps.executeQuery();
 
-            ps.setString(1, this.generateNextMaGoiKH());
+            if (rs.next()) {
+                String magoikh = rs.getString("MaGoiKH");
+                String makh = rs.getString("MaKH");
+                String magoi = rs.getString("MaGoi");
+                String manv = rs.getString("MaNV");
+                double sogiobandau = rs.getDouble("SoGioBanDau");
+                double sogioconlai = rs.getDouble("SoGioConLai");
+                LocalDateTime ngaymua = rs.getTimestamp("NgayMua").toLocalDateTime();
+                LocalDateTime ngayhethan = rs.getTimestamp("NgayHetHan").toLocalDateTime();
+                double giamua = rs.getDouble("GiaMua");
+                String trangthai = rs.getString("TrangThai");
+
+                GoiDichVuKhachHang gdvkh = new GoiDichVuKhachHang(magoikh, makh, magoi, manv,
+                        sogiobandau, sogioconlai, ngaymua, ngayhethan, giamua, trangthai);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("[LỖI GETBYMAGOIKHACHHANG - GoiDichVuKhachHangDAO]: " + e.getMessage());
+            return null;
+        } finally {
+            DBConnection.closeConnection();
+        }
+
+        return goiKH;
+    }
+
+    // PHƯƠNG THỨC INSERT.
+    public boolean insert(GoiDichVuKhachHang newGDVKH) throws Exception{
+        conn = DBConnection.getConnection();
+        String sql = "INSERT INTO goidichvu_khachhang (MaGoiKH, MaKH, MaGoi, MaNV, SoGioBanDau, SoGioConLai" +
+                ", NgayMua, NgayHetHan, GiaMua, TrangThai) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            ps = conn.prepareStatement(sql);
+
+            ps.setString(1, this.generateNextMaGoiKH(conn));
             ps.setString(2, newGDVKH.getMakh());
             ps.setString(3, newGDVKH.getMagoi());
             ps.setString(4, newGDVKH.getManv());
@@ -87,19 +126,17 @@ public class GoiDichVuKhachHangDAO{
 
             return rowAffected > 0;
         } catch (SQLException e) {
-            System.err.println("[LỖI INSERT - GoiDichVuKhachHangDAO]: " + e.getMessage());
-            return false;
-        } finally {
-            DBConnection.closeConnection();
+            throw new Exception("[LỖI INSERT - GoiDichVuKhachHangDAO]: " + e.getMessage());
         }
     }
 
-    private String generateNextMaGoiKH() {
+    // TĂNG MÃ TỰ ĐỘNG
+    private String generateNextMaGoiKH(Connection conn1) throws Exception{
         String sql = "SELECT MaGoiKH FROM goidichvu_khachhang ORDER BY MaGoiKH DESC LIMIT 1";
         String nextID = "GOIKH001";
 
         try {
-            PreparedStatement ps1 = conn.prepareStatement(sql);
+            PreparedStatement ps1 = conn1.prepareStatement(sql);
             ResultSet rs1 = ps1.executeQuery();
 
             if (rs1.next()) {
@@ -108,17 +145,13 @@ public class GoiDichVuKhachHangDAO{
                 number++;
                 nextID = String.format("GOIKH%03d", number);
             }
+            return nextID;
         } catch (SQLException e) {
-            System.err.println("[LỖI TỰ TĂNG MÃ - GoiDichVuKhachHangDAO]: " + e.getMessage());
+            throw new Exception("[LỖI TỰ TĂNG MÃ - GoiDichVuKhachHangDAO]: " + e.getMessage());
         }
-        return nextID;
     }
 
-    /*
-    Phương thức update: cho phép sửa SoGioConLai và TrangThai
-    parameter: GoiDichVuKhachHang.
-    return: true/false.
-    */
+    // CHỈNH SỬA THÔNG TIN
     public boolean update(GoiDichVuKhachHang updateGDVKH) {
         String sql = "UPDATE goidichvu_khachhang SET SoGioConLai = ?" +
                 ", TrangThai = ? WHERE MaGoiKH = ?";
@@ -141,15 +174,8 @@ public class GoiDichVuKhachHangDAO{
         }
     }
 
-    /*
-    Phương thức getConHieuLuc: Kiểm tra gói dịch vụ có còn hạn và chưa hết thời gian không.
-    parameter: maGoiKH (Mã gói dịch vụ của khách hàng).
-    return:
-        - Boolean.TRUE: Nếu tìm thấy mã và còn hiệu lực.
-        - Boolean.FALSE: Nếu tìm thấy mã nhưng đã hết hạn/hết thời gian.
-        - null: Nếu không tìm thấy mã gói này trong hệ thống.
-    */
-    public Boolean getConHieuLuc(String maGoiKH) {
+    // KIỂM TRA HIỆU LỰC CỦA GÓI
+    public boolean getConHieuLuc(String maGoiKH) {
         String sql = "SELECT NgayHetHan, TrangThai FROM goidichvu_khachhang WHERE MaGoiKH = ?";
 
         try {
@@ -176,22 +202,85 @@ public class GoiDichVuKhachHangDAO{
                 }
             } else {
                 // Không tìm thấy mã gói trong database
-                return null;
+                return false;
             }
 
         } catch (SQLException e) {
             System.err.println("[LỖI GETCONHIEULUC - GoiDichVuKhachHangDAO]: " + e.getMessage());
-            return null;
+            return false;
         } finally {
             DBConnection.closeConnection();
         }
     }
 
+    // LẤY GÓI DỊCH VỤ KHÁCH HÀNG BẰNG MÃ
+    public GoiDichVuKhachHang getByID(String maGKH){
+        String sql = "SELECT * FROM goidichvu_khachhang WHERE MaGoiKH = ?";
+        GoiDichVuKhachHang result = null;
+        try{
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, maGKH);
+            rs = ps.executeQuery();
+            if(rs.next()){
+                String magoikh = rs.getString("MaGoiKH");
+                String makh = rs.getString("MaKH");
+                String magoi = rs.getString("MaGoi");
+                String manv = rs.getString("MaNV");
+                double sogiobandau = rs.getDouble("SoGioBanDau");
+                double sogioconlai = rs.getDouble("SoGioConLai");
+                LocalDateTime ngaymua = rs.getTimestamp("NgayMua").toLocalDateTime();
+                LocalDateTime ngayhethan = rs.getTimestamp("NgayHetHan").toLocalDateTime();
+                double giamua = rs.getDouble("GiaMua");
+                String trangthai = rs.getString("TrangThai");
+
+                result = new GoiDichVuKhachHang(magoikh, makh, magoi, manv,
+                        sogiobandau, sogioconlai, ngaymua, ngayhethan, giamua, trangthai);
+            }
+        }catch(Exception e){
+            System.out.println("Lỗi getByID -GoiDichVuKhachHangDAO: " + e.getMessage());
+        }finally{
+            DBConnection.closeConnection();
+        }
+        return result;
+    }
+
+    //  IN THÔNG TIN
     public void print(GoiDichVuKhachHang gdv) {
-        System.out.println("MaGoiKH: " + gdv.getMagoi() + " | MaKH: " + gdv.getMakh()
+        System.out.println("MaGoiKH: " + gdv.getMagoikh() + " | MaKH: " + gdv.getMakh()
                 + " | MaGoi: " + gdv.getMagoi() + " | MaNV: " + gdv.getManv()
                 + " | SoGioBanDau: " + gdv.getSogiobandau() + " | SoGioConLai: " + gdv.getSogioconlai()
                 + " | NgayMua: " + gdv.getNgaymua() + " | NgayHetHan: " + gdv.getNgayhethan() + " | GiaMua: "
                 + gdv.getGiamua() + " | TrangThai: " + gdv.getTrangthai());
+    }
+
+    public List<GoiDichVuKhachHang> getAll() {
+        List<GoiDichVuKhachHang> danhSach = new ArrayList<>();
+        String sql = "SELECT * FROM goidichvu_khachhang ORDER BY NgayMua DESC";
+        try {
+            conn = DBConnection.getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String magoikh     = rs.getString("MaGoiKH");
+                String makh        = rs.getString("MaKH");
+                String magoi       = rs.getString("MaGoi");
+                String manv        = rs.getString("MaNV");
+                double sogiobandau = rs.getDouble("SoGioBanDau");
+                double sogioconlai = rs.getDouble("SoGioConLai");
+                LocalDateTime ngaymua    = rs.getTimestamp("NgayMua").toLocalDateTime();
+                LocalDateTime ngayhethan = rs.getTimestamp("NgayHetHan").toLocalDateTime();
+                double giamua      = rs.getDouble("GiaMua");
+                String trangthai   = rs.getString("TrangThai");
+                danhSach.add(new GoiDichVuKhachHang(magoikh, makh, magoi, manv,
+                        sogiobandau, sogioconlai, ngaymua, ngayhethan, giamua, trangthai));
+            }
+        } catch (SQLException e) {
+            System.err.println("[LỖI GETALL - GoiDichVuKhachHangDAO]: " + e.getMessage());
+            return new ArrayList<>();
+        } finally {
+            DBConnection.closeConnection();
+        }
+        return danhSach;
     }
 }
